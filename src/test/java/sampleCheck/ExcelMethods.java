@@ -1,10 +1,13 @@
 package sampleCheck;
 
 import org.apache.poi.ss.usermodel.*;
+import org.apache.poi.xssf.usermodel.XSSFSheet;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -92,9 +95,70 @@ public class ExcelMethods {
                 }
             }
         } catch (Exception e) {
-            System.out.println("Exception in ExcelMethods.java/readFromExcel() method" + e);
+            System.out.println("Exception in ExcelMethods.java/readFilteredColumnData() method" + e);
         }
         return dataSet;
+    }
+
+    public void writeDataToExcel(String filename, String sheetName, List<String> header, String... data) {
+        FileInputStream fis = null;
+        FileOutputStream fos = null;
+        Workbook wb = null;
+        try {
+            File file = new File(System.getProperty("user.dir")
+                    + "\\src\\test\\resources\\sampleResources\\" + filename);
+            fis = new FileInputStream(file);
+            wb = WorkbookFactory.create(fis);
+            Sheet sheetname = wb.getSheet(sheetName);
+
+            fos = new FileOutputStream(System.getProperty("user.dir")
+                    + "\\src\\test\\resources\\sampleResources\\" + filename);
+            if (sheetname == null) {
+                Sheet newSheet = wb.createSheet(sheetName);
+                wb.write(fos);
+            } else {
+                int existingNumberOfRecords = sheetname.getLastRowNum();
+                System.out.println("No. of records in excel: " + existingNumberOfRecords);
+                /* IF The sheet is completely Empty...No Header!!! */
+                if(existingNumberOfRecords == -1 && !header.isEmpty())
+                {
+                    /* Adding Header to the Excel */
+                    int i = 0;
+                    for(String headerValue: header)
+                    {
+                        Row row = sheetname.getRow(1);
+                        Cell cell = row.createCell(i);
+                        cell.setCellValue(headerValue);
+                        i++;
+                    }
+                }
+                wb.write(fos);
+                System.out.println("Check Point...");
+            }
+        } catch (Exception e) {
+            System.out.println("Exception in ExcelMethods.java/writeDataToExcel() method" + e);
+        } finally {
+            try
+            {
+                if (fis!=null)
+                {
+                    fis.close();
+                }
+                if(fos!=null)
+                {
+                    fos.close();
+                }
+                if(wb!=null)
+                {
+                    wb.close();
+                }
+            }
+            catch (Exception e)
+            {
+                System.out.println("Exception in ExcelMethods.java/writeDataToExcel() method Finally Block" + e);
+            }
+
+        }
     }
 
 }
